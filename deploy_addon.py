@@ -82,7 +82,7 @@ zip_path = os.path.join(root_dir, zip_name + '.zip')
 REPO_URL_MASK = 'https://{gh_token}@github.com/{repo_slug}.git'
 gh_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug=repo_slug)
 kodi_repo_dir = os.path.join(root_dir, 'alfa-repo')
-kodi_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug='alfa-beto/alfa-repo')
+kodi_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug='alfa-addon/alfa-repo')
 # Start working
 os.chdir(root_dir)
 if args.zip:
@@ -125,7 +125,7 @@ if args.kodi:
     repo = args.kodi[0]
     branch = args.branch[0]
     os.chdir(root_dir)
-    off_repo_fork = REPO_URL_MASK.format(gh_token=gh_token, repo_slug='alfa-beto/' + repo)
+    off_repo_fork = REPO_URL_MASK.format(gh_token=gh_token, repo_slug='alfa-addon/' + repo)
     execute(['git', 'clone', off_repo_fork], silent=True)
     os.chdir(repo)
     execute(['git', 'config', 'user.name', USER_NAME])
