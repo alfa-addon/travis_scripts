@@ -69,7 +69,7 @@ if not args.addon:
     addon = os.environ['ADDON']
 else:
     addon = args.addon
-repo_slug= os.environ['TRAVIS_REPO_SLUG']
+repo_slug= "{}/alfa-repo".format(os.environ['GITHUB_REPOSITORY'].split("/")[0])
 root_dir = os.path.dirname(os.path.abspath(__file__))
 addon_dir = os.path.join(root_dir, addon)
 docs_dir = os.path.join(root_dir, 'docs')
@@ -82,7 +82,7 @@ zip_path = os.path.join(root_dir, zip_name + '.zip')
 REPO_URL_MASK = 'https://{gh_token}@github.com/{repo_slug}.git'
 gh_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug=repo_slug)
 kodi_repo_dir = os.path.join(root_dir, 'alfa-repo')
-kodi_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug='alfa-addon/alfa-repo')
+kodi_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug=repo_slug)
 # Start working
 os.chdir(root_dir)
 if args.zip:
@@ -90,7 +90,11 @@ if args.zip:
 if args.repo:
     if not os.path.exists(zip_path):
         create_zip(zip_name, root_dir, addon)
-    execute(['git', 'clone', kodi_repo_url], silent=True)
+    if not os.path.exists(kodi_repo_dir) or \
+       not os.path.exists(os.path.join(kodi_repo_dir, '.git')):
+        execute(['git', 'clone', kodi_repo_url], silent=False)
+    else:
+        execute(['git', 'pull'], silent=False)
     os.chdir(kodi_repo_dir)
     # execute(['git', 'checkout', 'gh-pages'])
     execute(['git', 'config', 'user.name', USER_NAME])
@@ -107,7 +111,7 @@ if args.repo:
     os.chdir(kodi_repo_dir)
     execute(['git', 'add', '--all', '.'])
     execute(['git', 'commit', '-m', '"Update {addon} to v.{version}"'.format(addon=addon, version=version)])
-    execute(['git', 'push', '--quiet'], silent=True)
+    execute(['git', 'push'], silent=False)
     print('Addon {addon} v{version} deployed to my Kodi repo'.format(addon=addon, version=version))
 if args.docs:
     os.chdir(docs_dir)
