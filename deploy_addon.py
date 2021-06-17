@@ -69,7 +69,8 @@ if not args.addon:
     addon = os.environ['ADDON']
 else:
     addon = args.addon
-repo_slug= "{}/alfa-repo".format(os.environ['GITHUB_REPOSITORY'].split("/")[0])
+username = os.environ['GITHUB_REPOSITORY'].split("/")[0]
+repo_slug= "{}/alfa-repo".format(username)
 root_dir = os.path.dirname(os.path.abspath(__file__))
 addon_dir = os.path.join(root_dir, addon)
 docs_dir = os.path.join(root_dir, 'docs')
@@ -79,10 +80,10 @@ with open(os.path.join(root_dir, addon, 'addon.xml'), 'rb') as addon_xml:
 zip_name = '{0}-{1}'.format(addon, version)
 zip_path = os.path.join(root_dir, zip_name + '.zip')
 # Define URLs
-REPO_URL_MASK = 'https://{gh_token}@github.com/{repo_slug}.git'
-gh_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug=repo_slug)
+REPO_URL_MASK = 'https://{username}:{gh_token}@github.com/{repo_slug}.git'
+gh_repo_url = REPO_URL_MASK.format(username=username.lower(), gh_token=gh_token, repo_slug=repo_slug)
 kodi_repo_dir = os.path.join(root_dir, 'alfa-repo')
-kodi_repo_url = REPO_URL_MASK.format(gh_token=gh_token, repo_slug=repo_slug)
+kodi_repo_url = REPO_URL_MASK.format(username=username.lower(), gh_token=gh_token, repo_slug=repo_slug)
 # Start working
 os.chdir(root_dir)
 if args.zip:
@@ -96,6 +97,7 @@ if args.repo:
     else:
         execute(['git', 'pull'], silent=False)
     os.chdir(kodi_repo_dir)
+    execute(['git', 'remote', 'set-url', 'origin', kodi_repo_url])
     # execute(['git', 'checkout', 'gh-pages'])
     execute(['git', 'config', 'user.name', USER_NAME])
     execute(['git', 'config', 'user.email', USER_EMAIL])
