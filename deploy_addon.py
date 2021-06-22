@@ -13,6 +13,7 @@ import os
 import shutil
 import argparse
 from subprocess import call
+from xml.etree.ElementTree import ElementTree as ET
 
 USER_NAME = '"________________"'
 USER_EMAIL = '"_____@gmail.com"'
@@ -63,12 +64,18 @@ parser.add_argument('-z', '--zip', help='pack addon into a ZIP file', action='st
 parser.add_argument('addon', nargs='?', help='addon ID', action='store', default='')
 parser.add_argument('-k', '--kodi', nargs=1, help='the name of Kodi addon repo')
 parser.add_argument('-b', '--branch', nargs=1, help='the name of a branch in the Kodi addon repo', default='krypton')
+parser.add_argument('-v', '--version', nargs='?', help='read addon version from xml and write it to a specified file', default='version')
 args = parser.parse_args()
-# Define paths
+
+# Define args
 if not args.addon:
     addon = os.environ['ADDON']
 else:
     addon = args.addon
+if not args.version:
+    args.version = 'version'
+
+# Define paths
 username = os.environ['GITHUB_REPOSITORY'].split("/")[0]
 repo_slug= "{}/alfa-repo".format(username)
 root_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,18 +83,29 @@ addon_dir = os.path.join(root_dir, addon)
 docs_dir = os.path.join(root_dir, 'docs')
 html_dir = os.path.join(docs_dir, '_build', 'html')
 with open(os.path.join(root_dir, addon, 'addon.xml'), 'rb') as addon_xml:
-    version = re.search(r'(?<!xml )version="(.+?)"', addon_xml.read()).group(1)
+    xml = ET().parse(addon_xml)
+    version = xml.get("version")
 zip_name = '{0}-{1}'.format(addon, version)
 zip_path = os.path.join(root_dir, zip_name + '.zip')
+
 # Define URLs
 REPO_URL_MASK = 'https://{username}:{gh_token}@github.com/{repo_slug}.git'
 gh_repo_url = REPO_URL_MASK.format(username=username.lower(), gh_token=gh_token, repo_slug=repo_slug)
 kodi_repo_dir = os.path.join(root_dir, 'alfa-repo')
 kodi_repo_url = REPO_URL_MASK.format(username=username.lower(), gh_token=gh_token, repo_slug=repo_slug)
+
 # Start working
 os.chdir(root_dir)
+
+if args.version:
+    _path = os.path.join(root_dir, args.version)
+    # print(_path)
+    with open(_path, "w") as file:
+        file.write(version)
+
 if args.zip:
     create_zip(zip_name, root_dir, addon)
+
 if args.repo:
     if not os.path.exists(zip_path):
         create_zip(zip_name, root_dir, addon)
@@ -115,6 +133,7 @@ if args.repo:
     execute(['git', 'commit', '-m', '"Update {addon} to v.{version}"'.format(addon=addon, version=version)])
     execute(['git', 'push'], silent=False)
     print('Addon {addon} v{version} deployed to my Kodi repo'.format(addon=addon, version=version))
+
 if args.docs:
     os.chdir(docs_dir)
     execute(['make', 'html'])
@@ -127,6 +146,7 @@ if args.docs:
     execute(['git', 'commit', '-m' '"Update {addon} docs to v.{version}"'.format(addon=addon, version=version)])
     execute(['git', 'push', '--force', '--quiet', gh_repo_url, 'HEAD:gh-pages'], silent=True)
     print('{addon} docs v.{version} published to GitHub Pages.'.format(addon=addon, version=version))
+
 if args.kodi:
     repo = args.kodi[0]
     branch = args.branch[0]
