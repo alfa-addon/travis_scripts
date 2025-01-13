@@ -8,7 +8,6 @@ Deploy Kodi addons to GitHub repository and/or publish Sphinx docs to GitHub Pag
 """
 
 from __future__ import print_function
-import re
 import os
 import sys
 import shutil
@@ -17,7 +16,7 @@ from subprocess import call
 from xml.etree.ElementTree import ElementTree as ET
 
 USER_NAME = os.environ.get('GIT_USER_NAME', 'Alfa')
-USER_EMAIL = os.environ.get('GIT_USER_EMAIL', '30527549+alfa-addon@users.noreply.github.com')
+USER_EMAIL = os.environ.get('GIT_USER_EMAIL', 'alfa-add-on@users.noreply.github.com')
 DEVNULL = open(os.devnull, 'w')
 GH_TOKEN = os.environ.get('GH_TOKEN', '')
 PYV = sys.version_info[0]
@@ -125,16 +124,8 @@ if args.repo:
        not os.path.exists(os.path.join(kodi_repo_dir, '.git')):
         execute(['git', 'clone', kodi_repo_url])
 
-    # Sin sentido
-    # else:
-    #     execute(['git', 'pull'])
-
     os.chdir(kodi_repo_dir)
     execute(['git', 'remote', 'set-url', 'origin', kodi_repo_url])
-    # execute(['git', 'checkout', 'gh-pages'])
-    execute(['git', 'config', 'user.name', USER_NAME])
-    execute(['git', 'config', 'user.email', USER_EMAIL])
-    # addon_repo = os.path.join(kodi_repo_dir, 'repo', addon)
     addon_repo = os.path.join(kodi_repo_dir, addon)
 
     if not os.path.exists(addon_repo):
@@ -142,18 +133,13 @@ if args.repo:
 
     shutil.copy(zip_path, addon_repo)
     shutil.copy(os.path.join(addon_dir, 'addon.xml'), addon_repo)
-
-    # os.chdir(os.path.join(kodi_repo_dir, 'repo'))
-    execute(['pip%s' % PYV, 'install', 'lxml'])
     os.chdir(kodi_repo_dir)
-    execute(['python', 'repo_prep.py'])
-    os.chdir(kodi_repo_dir)
-
+    execute(['sh', 'gen_repo.sh'])
     execute(['git', 'add', '--all', '.'])
-    execute(['git', 'commit', '-m', 'Update {addon} to v.{version}'.format(addon=addon, version=version)])
+    execute(['git', 'commit', '-m', 'Updated {addon} to v{version}'.format(addon=addon, version=version)])
     execute(['git', 'push', '--force'])
 
-    print('Addon {addon} v{version} deployed to Kodi repo'.format(addon=addon, version=version))
+    print('Add-on {addon} v{version} deployed to Kodi repo'.format(addon=addon, version=version))
 
 if args.docs:
     os.chdir(docs_dir)
