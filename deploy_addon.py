@@ -135,9 +135,9 @@ if args.repo:
     shutil.copy(os.path.join(addon_dir, 'addon.xml'), addon_repo)
     os.chdir(kodi_repo_dir)
     execute(['sh', 'gen_repo.sh'])
-    execute(['git', 'add', '--all', '.'])
-    execute(['git', 'commit', '-m', 'Updated {addon} to v{version}'.format(addon=addon, version=version)])
-    execute(['git', 'push', '--force'])
+    # execute(['git', 'add', '--all', '.'])
+    # execute(['git', 'commit', '-m', 'Updated {addon} to v{version}'.format(addon=addon, version=version)])
+    # execute(['git', 'push', '--force'])
 
     print('Add-on {addon} v{version} deployed to Kodi repo'.format(addon=addon, version=version))
 
